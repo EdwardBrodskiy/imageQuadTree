@@ -42,7 +42,7 @@ class Converter:
             self.__output_img[x: nx, y: ny, :] = np.mean(self.__output_img[x: nx, y: ny, :],
                                                          axis=(0, 1)) # * pixel_to_color_ratio
             self._update_progress(0.25 ** depth)
-        elif width > 4 and height > 4:
+        else:
             mx, my = width // 2 + x, height // 2 + y
             self._quad(x, y, mx, my, max_colors, depth + 1)
             self._quad(mx, y, nx, my, max_colors, depth + 1)
