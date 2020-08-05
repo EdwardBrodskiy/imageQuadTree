@@ -1,13 +1,15 @@
 import cv2
 from converter import *
 
-image_name = 'scenery2.jpg'
+image_name = input('Enter file name: ')
 
 image_cv2 = cv2.imread(f'sample-imgs/{image_name}')
 
-maker = Converter(image_cv2)
+maker = Converter(color_count_method=Converter.color_count_differing)
 
-quad_image = maker.quadify_image(100)
+maker.set_image(image_cv2)
+
+quad_image = maker.quadify_image(40)
 
 result = cv2.imwrite(f'output/{image_name}', quad_image)
 
