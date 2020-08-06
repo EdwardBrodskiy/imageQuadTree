@@ -1,4 +1,6 @@
 import numpy as np
+from customIterTools import *
+from progress.bar import IncrementalBar
 
 
 class Converter:
@@ -12,21 +14,25 @@ class Converter:
         self.__img = None
         self.__output_img = None
         self.__progress = 0
+        self.__progress_bar = None
 
     def set_image(self, img: np.ndarray):
         self.__img = img.copy()
 
     def quadify_image(self, max_colors):
-        print('    25   50   75   100')
+        self.__progress_bar = IncrementalBar('Render Progress', suffix='%(percent)d%%')
+
         self.__output_img = self.__img.copy()
         width, height, *_ = self.__output_img.shape
         self._quad(0, 0, width, height, max_colors, 0)
-        print(' | Complete')
+
+        self.__progress_bar.finish()
         return self.__output_img
 
     def _update_progress(self, new_progress):
         temp = self.__progress
         self.__progress += new_progress
+        self.__progress_bar.goto(self.__progress * 100)
         if temp // 0.05 < self.__progress // 0.05:
             print('#', end='')
 
@@ -40,7 +46,7 @@ class Converter:
         if num_of_colors <= max_colors:
             # pixel_to_color_ratio = width * height / num_of_colors
             self.__output_img[x: nx, y: ny, :] = np.mean(self.__output_img[x: nx, y: ny, :],
-                                                         axis=(0, 1)) # * pixel_to_color_ratio
+                                                         axis=(0, 1))  # * pixel_to_color_ratio
             self._update_progress(0.25 ** depth)
         else:
             mx, my = width // 2 + x, height // 2 + y
@@ -52,25 +58,23 @@ class Converter:
     @staticmethod
     def color_count_all(img, x, y, nx, ny, max_colors):
         colors = set()
-        for i in range(x, nx):
-            for j in range(y, ny):
-                colors.add(str(img[i, j, :]))
-                if len(colors) > max_colors:
-                    return len(colors)
+        for i, j in iterate_cartesian(range(x, nx), range(y, ny)):
+            colors.add(str(img[i, j, :]))
+            if len(colors) > max_colors:
+                return len(colors)
 
         return len(colors)
 
     @staticmethod
     def color_count_differing(img, x, y, nx, ny, max_colors):
         colors = []
-        for i in range(x, nx):
-            for j in range(y, ny):
-                pixel_color = img[i, j, :]
-                for color in colors:
-                    if ((color - pixel_color) ** 2).sum() < 16:
-                        break
-                else:
-                    colors.append(pixel_color)
-                    if len(colors) > max_colors:
-                        return len(colors)
+        for i, j in iterate_in_steps(x, y, nx, ny, step=(ny - y) // 8):
+            pixel_color = img[i, j, :]
+            for color in colors:
+                if ((color - pixel_color) ** 2).sum() < 256:
+                    break
+            else:
+                colors.append(pixel_color)
+                if len(colors) > max_colors:
+                    return len(colors)
         return len(colors)
