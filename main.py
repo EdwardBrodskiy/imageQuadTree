@@ -1,17 +1,17 @@
 import cv2
 from converter import *
 
-image_name = "kitten.jpg"  # input('Enter file name: ')
+image_name = input('Enter file name: ')
 
-image_cv2 = cv2.imread(f'sample-imgs/{image_name}')
+image_cv2 = cv2.imread(f'input-images/{image_name}')
 
 maker = Converter(color_count_method=Converter.color_count_differing)
 
 maker.set_image(image_cv2)
 
-quad_image = maker.quadify_image(5)
+quad_image = maker.quadify_image(7)
 
-result = cv2.imwrite(f'output/{image_name}', quad_image)
+result = cv2.imwrite(f'sample-images/{image_name}', quad_image)
 
 if result:
     print('File saved successfully')
